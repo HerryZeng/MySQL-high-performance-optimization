@@ -17,4 +17,40 @@
 3. 在一对多，需要关联统计的字段上，添加冗余字段。
 如BBS当中，每版块里有N条帖子，在首页，显示了版块信息，和版块下的帖子数。这个帖子数就建议为冗余字段 。
 
+---
+
+### 列类型选择原则
+
+1. 字段类型优先级  整型 > date,time > emum,char > varchar > blob,text
+列的特点分析
+整型：定长，没有国家/地区之后，没有字符集的差异。
+比如tinyint 1,2,3,4,5 char(1),a,b,c,d,e 从空间上都占一个字节，但order by 排序，前者快。
+原因：后者需要考虑字符集与校对集（就是排序规则）
+
+time: 定长，运算快，节省空间，考虑时区，写sql时不方便，where > '2015-10-12';
+emum: 能起来约束值的目的，内部用整型来存储，但与char联查时，内部要经历串与值的转化。
+char: 定长，考虑字符集和排序校对集
+varchar: 不定义，要考虑字符集的转换与排序时的校对集，速度已是。
+text/blob: 无法使用内存临时表（排序等操作只能在磁盘上进行）
+
+附： 关于date/time的选择，直接选int unsgined not null，存储时间戳
+[https://www.xaprb.com/blog/2014/01/30/timestamps-in-mysql/](https://www.xaprb.com/blog/2014/01/30/timestamps-in-mysql/)
+
+性别：以utf8为例
+char(1)，3个字节
+emum('男'，'女'),内部转成数字来存在，多了一个转换过程
+tinyint(), 0,1,2 定长，1个字节
+
+2. 够用主行，不要慷慨，如smallint,varchar(N)
+原因，大的字段浪费内存，影响速度
+以年龄为例，tinyint unsigned not null ,可以存储255岁，足够，用int浪费了3个字节
+以varchar(10)，varchar(300)存储的内容相同，但在表关联查询时，varchar(300)要花更多内存。
+
+3. 尽量避免使用NULL()
+原因：NULL不利于索引，要用特殊的字节来标注
+在磁盘上占据的空间其实更大(MySQL5.7已对null做出改进，但查询仍是不便)
+
+
+
+
 
