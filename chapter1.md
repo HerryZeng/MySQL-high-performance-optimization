@@ -51,6 +51,11 @@ tinyint(), 0,1,2 定长，1个字节
 在磁盘上占据的空间其实更大(MySQL5.5已对null做出改进，但查询仍是不便)
 
 
-
+Enum列的说明
++ enum列在内部是用整型存储的。
++ enum列与emum列相关联速度最快
++ enum列比(var)char的弱势-在碰到与char关联时，要转化，要花时间
++ 优势在于，当char非常长时，enum依然是整型固定长度。当查询的数量越大时，enum的优势越明显
++ enum列与char/varchar关联，因为要转化，速度要比enum>enum,char>char要已是，但有时也这样用，可以在数据量特别大的时候，可以节省IO。
 
 
